@@ -19,7 +19,7 @@ abstract class Player
      * @param   gameState - state of the game
      * @return  A single Move that player will perform
      */
-    public abstract Move getMove(GameState state);
+    public abstract Move getMove(GameState state, Player opponentPlayer);
 
 
 

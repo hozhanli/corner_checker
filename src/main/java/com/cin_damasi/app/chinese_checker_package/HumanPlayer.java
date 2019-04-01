@@ -8,7 +8,7 @@ class HumanPlayer extends Player
         ;
     }
 
-    public Move getMove(GameState state)
+    public Move getMove(GameState state, Player opponentPlayer)
     {
         return null;
     }

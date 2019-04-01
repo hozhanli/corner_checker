@@ -31,7 +31,7 @@ class ComputerPlayerMinimax extends ComputerPlayer
     /* 
      * You will implement this function in homework
      */
-    public Move getMove(GameState gameState)
+    public Move getMove(GameState gameState, Player opponentPlayer)
     {
         return null;
     }

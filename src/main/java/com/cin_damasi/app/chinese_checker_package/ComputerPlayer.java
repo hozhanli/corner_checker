@@ -8,5 +8,5 @@ abstract class ComputerPlayer extends Player
         ;
     }
 
-    public abstract Move getMove(GameState state);
+    public abstract Move getMove(GameState state, Player opponentPlayer);
 }

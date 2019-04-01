@@ -12,7 +12,7 @@ class ComputerPlayerRandom extends ComputerPlayer
     }
 
     
-    public Move getMove(GameState gameState)
+    public Move getMove(GameState gameState, Player opponentPlayer)
     {
         //  get possible moves the player can make
         List<Move> availableMoves = this.getAvailableMoves(gameState);

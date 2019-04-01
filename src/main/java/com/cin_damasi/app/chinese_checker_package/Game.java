@@ -191,7 +191,8 @@ public class Game implements PieceListener, SquareListener, Runnable
                 {
                     //  computer player
                     //wait for search/function to finish
-                    this.playedMove = this.currentPlayer.getMove(this.currentState);
+                    Player opponentPlayer = this.getOpponentPlayer(this.currentPlayer);
+                    this.playedMove = this.currentPlayer.getMove(this.currentState, opponentPlayer);
                 }
             }
 
@@ -349,6 +350,18 @@ public class Game implements PieceListener, SquareListener, Runnable
         {
             this.currentPlayer = this.playerGreen;
             this.board.changeLabel("GREEN player's turn");
+        }
+    }
+
+    public Player getOpponentPlayer(Player p)
+    {
+        if (p == this.playerRed)
+        {
+            return this.playerGreen;
+        }
+        else
+        {
+            return this.playerRed;
         }
     }
 
