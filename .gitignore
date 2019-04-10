@@ -3,6 +3,3 @@
 *.class
 .removeclasses.sh
 target/
-
-./idea
-./settings
