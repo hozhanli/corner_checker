@@ -2,6 +2,7 @@ package com.cin_damasi.app.chinese_checker_package;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 abstract class Player {
     //  PLAYER_RED or PLAYER_GREEN
@@ -9,7 +10,7 @@ abstract class Player {
 
 
     //  player has a list of its pieces in the game
-    List<Piece> pieces = new ArrayList<Piece>();
+    List<Piece> pieces = new CopyOnWriteArrayList<Piece>();
 
 
     /* Takes a GameState, and calculates the move to be performed by the player.
@@ -60,7 +61,7 @@ abstract class Player {
      * @return  A list containing forward Moves that player can perform with all its pieces
      */
     public List<Move> getAvailableForwardMoves(GameState gameState) {
-        List<Move> availableForwardMoves = new ArrayList<Move>();
+        List<Move> availableForwardMoves = new CopyOnWriteArrayList<Move>();
 
         for (Piece piece : this.pieces) {
             availableForwardMoves.addAll(gameState.getNextMovesForward(piece));
