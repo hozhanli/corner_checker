@@ -16,6 +16,7 @@ import static com.cin_damasi.app.chinese_checker_package.ProjectDefinitions.PIEC
 public class Piece
 {
     private int color;
+
     private PiecePosition pos;
     private Player owner;
 
