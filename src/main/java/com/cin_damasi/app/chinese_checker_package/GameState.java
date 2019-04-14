@@ -172,58 +172,26 @@ public class GameState {
      */
     public List<Move> getNextMovesForward(Piece piece) {
         List<Move> moves = new ArrayList<>();
-        PiecePosition currentPosition = piece.getPosition();
         List<PiecePosition> forwardPositions = piece.getForwardPositions();
-        for (PiecePosition forwardPosition : forwardPositions) {
-            if (isPositionAvailable(forwardPosition)) {
-                moves.add(new Move(piece, currentPosition, forwardPosition));
+        for (PiecePosition pos : forwardPositions) {
+            if (isPositionAvailable(pos)) {
+                moves.add(new Move(piece, piece.getPosition(), pos));
             }
         }
-
-        List<Move> nextJumpMovesForward = getNextJumpMovesForward(piece);
-
-        if (nextJumpMovesForward != null)
-            moves.addAll(nextJumpMovesForward);
-
+        getNextJumpMovesForward(moves, piece, piece.getPosition());
         return moves;
     }
 
-    public List<Move> getNextJumpMovesForward(Piece piece) {
-        if (piece == null)
-            return new ArrayList<>();
-        List<Move> moves = new ArrayList<>();
-
-        PiecePosition currentPosition = piece.getPosition();
-        int i = currentPosition.getRow();
-        int j = currentPosition.getColumn();
-
-        List<PiecePosition> jumpPositions = piece.getForwardJumpPositions();
-        for (PiecePosition jumPosition : jumpPositions) {
-            Move move = null;
-            if (isPositionAvailable(jumPosition)) {
-                if (jumPosition.getColumn() == j) {
-                    if (piece.getColor() == PIECE_COLOR_RED_PIECE && !isSquareEmpty(i - 1, j)) {
-                        move = new Move(piece, currentPosition, jumPosition);
-                    }
-                    if (piece.getColor() == PIECE_COLOR_GREEN_PIECE && !isSquareEmpty(i + 1, j)) {
-                        move = new Move(piece, currentPosition, jumPosition);
-                    }
-                } else if (jumPosition.getRow() == i) {
-                    if (piece.getColor() == PIECE_COLOR_RED_PIECE && !isSquareEmpty(i, j - 1)) {
-                        move = new Move(piece, currentPosition, jumPosition);
-                    }
-                    if (piece.getColor() == PIECE_COLOR_GREEN_PIECE && !isSquareEmpty(i, j + 1)) {
-                        move = new Move(piece, currentPosition, jumPosition);
-                    }
+    private void getNextJumpMovesForward(List<Move> moves, Piece piece, PiecePosition position) {
+        List<PiecePosition> jumpPositions = piece.getForwardJumpPositions(position);
+        for (PiecePosition jumpPosition : jumpPositions) {
+            if (isPositionAvailable(jumpPosition)) {
+                if (!isPositionAvailable(getBetweenPosition(position, jumpPosition))) {
+                    moves.add(new Move(piece, piece.getPosition(), jumpPosition));
+                    getNextJumpMovesForward(moves, piece, jumpPosition);
                 }
             }
-            if (move != null) {
-                moves.add(new Move(piece, currentPosition, jumPosition));
-                moves.addAll(getNextJumpMovesForward(new Piece(move.getNextPosition(), piece.getColor(), piece.getOwner())));
-            }
         }
-
-        return moves;
     }
 
 
