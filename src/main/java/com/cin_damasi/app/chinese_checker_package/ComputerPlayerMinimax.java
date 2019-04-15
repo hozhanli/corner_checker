@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 class ComputerPlayerMinimax extends ComputerPlayer {
+    private int playerToMaximize;
+    private int playerToMinimize;
 
     private static int[][] heuristicScores = {
             {14, 13, 12, 11, 10, 9, 8, 7},
@@ -29,7 +31,7 @@ class ComputerPlayerMinimax extends ComputerPlayer {
         int[][] array = state.getGameStateArray();
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[i].length; j++) {
-                if (array[i][j] == ProjectDefinitions.PIECE_COLOR_RED_PIECE) {
+                if (array[i][j] == playerToMaximize) {
                     score += heuristicScores[i][j];
                 }
             }
@@ -45,8 +47,7 @@ class ComputerPlayerMinimax extends ComputerPlayer {
         int[][] array = state.getGameStateArray();
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[i].length; j++) {
-                score += heuristicScores[i][j];
-                if (array[i][j] == ProjectDefinitions.PIECE_COLOR_GREEN_PIECE) {
+                if (array[i][j] == playerToMinimize) {
                     score -= heuristicScores[i][j];
                 }
             }
@@ -59,9 +60,10 @@ class ComputerPlayerMinimax extends ComputerPlayer {
      * You will implement this function in homework
      */
     public Move getMove(GameState gameState, Player opponentPlayer) {
+        playerToMaximize = this.whichPlayer;
+        playerToMinimize = opponentPlayer.whichPlayer;
         List<Piece> pieces = this.pieces;
 
-        Player currentPlayer = this;
         int depth = 5;
         Node alphaNode = Node.Alpha();
         Node betaNode = Node.Beta();
@@ -69,7 +71,7 @@ class ComputerPlayerMinimax extends ComputerPlayer {
         for (Move move : availableMoves) {
             GameState updatedState = GameState.createState(gameState, move);
             Node initialNode = new Node(null, move, minimize(updatedState));
-            Node nextNode = minimax(updatedState, updatePlayer(updatedState, opponentPlayer), updatePlayer(updatedState, currentPlayer), initialNode, alphaNode, betaNode, depth - 1);
+            Node nextNode = minimax(updatedState, updatePlayer(updatedState, opponentPlayer), updatePlayer(updatedState, this), initialNode, alphaNode, betaNode, depth - 1);
             if (nextNode.root != null || nextNode.move != null) {
                 alphaNode = Node.Max(alphaNode, nextNode);
             }
@@ -94,7 +96,7 @@ class ComputerPlayerMinimax extends ComputerPlayer {
         }
 
         int score;
-        if (current.whichPlayer == ProjectDefinitions.PLAYER_GREEN) {
+        if (current.whichPlayer == playerToMinimize) {
             for (Move m : moves) {
                 GameState updatedState = GameState.createState(state, m);
                 score = minimize(updatedState);
