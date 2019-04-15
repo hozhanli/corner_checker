@@ -4,6 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 class ComputerPlayerMinimax extends ComputerPlayer {
+
+    private static int[][] heuristicScores = {
+            {14, 13, 12, 11, 10, 9, 8, 7},
+            {13, 12, 11, 10, 9, 8, 7, 6},
+            {12, 11, 10, 9, 8, 7, 6, 5},
+            {11, 10, 9, 8, 7, 6, 5, 4},
+            {10, 9, 8, 7, 6, 5, 4, 3},
+            {9, 8, 7, 6, 5, 4, 3, 2},
+            {8, 7, 6, 5, 4, 3, 2, 1},
+            {7, 6, 5, 4, 3, 2, 1, 0}
+    };
+
+
     public ComputerPlayerMinimax(int whichPlayer) {
         super(whichPlayer);
     }
@@ -11,15 +24,34 @@ class ComputerPlayerMinimax extends ComputerPlayer {
     /*
      * You will implement this function in homework
      */
-    private int calculateStateHeuristicValue_1(GameState state) {
-        return 0;
+    private int maximize(GameState state) {
+        int score = 0;
+        int[][] array = state.getGameStateArray();
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array[i].length; j++) {
+                if (array[i][j] == ProjectDefinitions.PIECE_COLOR_RED_PIECE) {
+                    score += heuristicScores[i][j];
+                }
+            }
+        }
+        return score;
     }
 
     /*
      * You will implement this function in homework
      */
-    private int calculateStateHeuristicValue_2(GameState state) {
-        return 0;
+    private int minimize(GameState state) {
+        int score = 448;
+        int[][] array = state.getGameStateArray();
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array[i].length; j++) {
+                score += heuristicScores[i][j];
+                if (array[i][j] == ProjectDefinitions.PIECE_COLOR_GREEN_PIECE) {
+                    score -= heuristicScores[i][j];
+                }
+            }
+        }
+        return score;
     }
 
 
@@ -27,22 +59,25 @@ class ComputerPlayerMinimax extends ComputerPlayer {
      * You will implement this function in homework
      */
     public Move getMove(GameState gameState, Player opponentPlayer) {
+        List<Piece> pieces = this.pieces;
+
         Player currentPlayer = this;
-        int depth = 3;
+        int depth = 5;
         Node alphaNode = Node.Alpha();
         Node betaNode = Node.Beta();
         List<Move> availableMoves = this.getAvailableMoves(gameState);
         for (Move move : availableMoves) {
             GameState updatedState = GameState.createState(gameState, move);
-            Node initialNode = new Node(null, move, Integer.MIN_VALUE);
+            Node initialNode = new Node(null, move, minimize(updatedState));
             Node nextNode = minimax(updatedState, updatePlayer(updatedState, opponentPlayer), updatePlayer(updatedState, currentPlayer), initialNode, alphaNode, betaNode, depth - 1);
             if (nextNode.root != null || nextNode.move != null) {
                 alphaNode = Node.Max(alphaNode, nextNode);
             }
         }
-        final Move move = alphaNode.move;
-        for (Piece piece : this.pieces) {
+        final Move move = alphaNode.root;
+        for (Piece piece : pieces) {
             if (piece.getPosition().equals(move.getPreviousPosition())) {
+                this.pieces = pieces;
                 return new Move(piece, move.getPreviousPosition(), move.getNextPosition());
             }
         }
@@ -58,11 +93,11 @@ class ComputerPlayerMinimax extends ComputerPlayer {
             return initialNode;
         }
 
-        int score = 0;
+        int score;
         if (current.whichPlayer == ProjectDefinitions.PLAYER_GREEN) {
             for (Move m : moves) {
                 GameState updatedState = GameState.createState(state, m);
-                score = (int) (Math.random() * (100 - 1)) + 1;
+                score = minimize(updatedState);
                 Node nextBoard = minimax(updatedState, updatePlayer(updatedState, opponent), updatePlayer(updatedState, current), new Node(initialNode, m, score), alphaNode, betaNode, depth - 1);
                 betaNode = Node.Min(betaNode, nextBoard);
                 if (alphaNode.score >= betaNode.score) {
@@ -73,7 +108,7 @@ class ComputerPlayerMinimax extends ComputerPlayer {
         }
         for (Move m : moves) {
             GameState updatedState = GameState.createState(state, m);
-            score = (int) (Math.random() * (99 - 1)) + 1;
+            score = maximize(updatedState);
             Node nextBoard = minimax(updatedState, updatePlayer(updatedState, opponent), updatePlayer(updatedState, current), new Node(initialNode, m, score), alphaNode, betaNode, depth - 1);
             alphaNode = Node.Max(alphaNode, nextBoard);
             if (alphaNode.score >= betaNode.score) {
@@ -84,57 +119,21 @@ class ComputerPlayerMinimax extends ComputerPlayer {
     }
 
     private Player updatePlayer(GameState state, Player player) {
-        List<Piece> pieces = new ArrayList<>();
-        int[][] array = state.getGameStateArray();
+        Player p = new ComputerPlayerMinimax(player.whichPlayer);
 
+        List<Piece> pieces = new ArrayList<>();
+
+        int[][] array = state.getGameStateArray();
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[i].length; j++) {
                 if (array[i][j] == player.whichPlayer) {
-                    pieces.add(new Piece(i, j, player.whichPlayer, player));
+                    pieces.add(new Piece(i, j, player.whichPlayer, p));
                 }
             }
         }
         player.pieces = pieces;
-        return player;
+        return p;
     }
 }
 
 
-class Node {
-    public int score;
-    public Move move;
-    public Move root = null;
-
-    public Node(Move move, int score) {
-        this.move = move;
-        this.score = score;
-    }
-
-    public Node(Node root, Move move, int score) {
-        if (root != null) {
-            if (root.root != null) {
-                this.root = root.root;
-            } else {
-                this.root = root.move;
-            }
-        }
-        this.move = move;
-        this.score = score;
-    }
-
-    public static Node Min(Node a, Node b) {
-        return a.score <= b.score ? a : b;
-    }
-
-    public static Node Max(Node a, Node b) {
-        return a.score >= b.score ? a : b;
-    }
-
-    public static Node Alpha() {
-        return new Node(null, Integer.MIN_VALUE);
-    }
-
-    public static Node Beta() {
-        return new Node(null, Integer.MAX_VALUE);
-    }
-}
