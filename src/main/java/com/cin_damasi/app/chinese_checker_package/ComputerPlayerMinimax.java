@@ -27,6 +27,7 @@ class ComputerPlayerMinimax extends ComputerPlayer {
      * You will implement this function in homework
      */
     public Move getMove(GameState gameState, Player opponentPlayer) {
+        Player currentPlayer = this;
         int depth = 3;
         Node alphaNode = Node.Alpha();
         Node betaNode = Node.Beta();
@@ -34,12 +35,18 @@ class ComputerPlayerMinimax extends ComputerPlayer {
         for (Move move : availableMoves) {
             GameState updatedState = GameState.createState(gameState, move);
             Node initialNode = new Node(null, move, Integer.MIN_VALUE);
-            Node nextNode = minimax(updatedState, updatePlayer(updatedState, opponentPlayer), updatePlayer(updatedState, this), initialNode, alphaNode, betaNode, depth - 1);
+            Node nextNode = minimax(updatedState, updatePlayer(updatedState, opponentPlayer), updatePlayer(updatedState, currentPlayer), initialNode, alphaNode, betaNode, depth - 1);
             if (nextNode.root != null || nextNode.move != null) {
                 alphaNode = Node.Max(alphaNode, nextNode);
             }
         }
-        return alphaNode.move;
+        final Move move = alphaNode.move;
+        for (Piece piece : this.pieces) {
+            if (piece.getPosition().equals(move.getPreviousPosition())) {
+                return new Move(piece, move.getPreviousPosition(), move.getNextPosition());
+            }
+        }
+        return null;
     }
 
     public Node minimax(GameState state, Player current, Player opponent, Node initialNode, Node alphaNode, Node betaNode, int depth) {
@@ -80,8 +87,8 @@ class ComputerPlayerMinimax extends ComputerPlayer {
         List<Piece> pieces = new ArrayList<>();
         int[][] array = state.getGameStateArray();
 
-        for (int i = 0; i<array.length; i++){
-            for (int j = 0; j<array[i].length; j++){
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array[i].length; j++) {
                 if (array[i][j] == player.whichPlayer) {
                     pieces.add(new Piece(i, j, player.whichPlayer, player));
                 }
@@ -91,7 +98,6 @@ class ComputerPlayerMinimax extends ComputerPlayer {
         return player;
     }
 }
-
 
 
 class Node {
