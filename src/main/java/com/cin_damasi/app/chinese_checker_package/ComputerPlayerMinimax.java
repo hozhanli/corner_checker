@@ -26,32 +26,31 @@ class ComputerPlayerMinimax extends ComputerPlayer {
     /*
      * You will implement this function in homework
      */
-    private int maximize(GameState state) {
-        int score = 0;
+    private int heuristic(GameState state, Player player, Boolean isMaximize) {
+        int score = isMaximize ? 0 : 448;
         int[][] array = state.getGameStateArray();
         for (int i = 0; i < array.length; i++) {
+            int count = 0;
             for (int j = 0; j < array[i].length; j++) {
-                if (array[i][j] == playerToMaximize) {
-                    score += heuristicScores[i][j];
+                if (array[i][j] == player.whichPlayer) {
+                    ++count;
+                    score = isMaximize ? score + heuristicScores[i][j] : score - heuristicScores[i][j];
+                    if (count > 3)
+                        score = isMaximize ? score - 7 : score + 7;
                 }
             }
         }
-        return score;
-    }
+        for (int j = 0; j < array.length; j++) {
+            int count = 0;
+            for (int i = 0; i < array.length; i++) {
+                if (array[i][j] == player.whichPlayer) {
+                    ++count;
+                    if (count > 3)
+                        score = isMaximize ? score - 7 : score + 7;
+                }
+            }
+        }
 
-    /*
-     * You will implement this function in homework
-     */
-    private int minimize(GameState state) {
-        int score = 448;
-        int[][] array = state.getGameStateArray();
-        for (int i = 0; i < array.length; i++) {
-            for (int j = 0; j < array[i].length; j++) {
-                if (array[i][j] == playerToMinimize) {
-                    score -= heuristicScores[i][j];
-                }
-            }
-        }
         return score;
     }
 
@@ -60,18 +59,17 @@ class ComputerPlayerMinimax extends ComputerPlayer {
      * You will implement this function in homework
      */
     public Move getMove(GameState gameState, Player opponentPlayer) {
-        playerToMaximize = this.whichPlayer;
-        playerToMinimize = opponentPlayer.whichPlayer;
         List<Piece> pieces = this.pieces;
 
+        Player currentPlayer = this;
         int depth = 5;
         Node alphaNode = Node.Alpha();
         Node betaNode = Node.Beta();
         List<Move> availableMoves = this.getAvailableMoves(gameState);
         for (Move move : availableMoves) {
             GameState updatedState = GameState.createState(gameState, move);
-            Node initialNode = new Node(null, move, minimize(updatedState));
-            Node nextNode = minimax(updatedState, updatePlayer(updatedState, opponentPlayer), updatePlayer(updatedState, this), initialNode, alphaNode, betaNode, depth - 1);
+            Node initialNode = new Node(null, move, Integer.MIN_VALUE);
+            Node nextNode = minimax(updatedState, updatePlayer(updatedState, opponentPlayer), updatePlayer(updatedState, currentPlayer), initialNode, alphaNode, betaNode, depth - 1);
             if (nextNode.root != null || nextNode.move != null) {
                 alphaNode = Node.Max(alphaNode, nextNode);
             }
@@ -96,10 +94,10 @@ class ComputerPlayerMinimax extends ComputerPlayer {
         }
 
         int score;
-        if (current.whichPlayer == playerToMinimize) {
+        if (current.whichPlayer == ProjectDefinitions.PLAYER_GREEN) {
             for (Move m : moves) {
                 GameState updatedState = GameState.createState(state, m);
-                score = minimize(updatedState);
+                score = heuristic(updatedState, current, false);
                 Node nextBoard = minimax(updatedState, updatePlayer(updatedState, opponent), updatePlayer(updatedState, current), new Node(initialNode, m, score), alphaNode, betaNode, depth - 1);
                 betaNode = Node.Min(betaNode, nextBoard);
                 if (alphaNode.score >= betaNode.score) {
@@ -110,7 +108,7 @@ class ComputerPlayerMinimax extends ComputerPlayer {
         }
         for (Move m : moves) {
             GameState updatedState = GameState.createState(state, m);
-            score = maximize(updatedState);
+            score = heuristic(updatedState, current, true);
             Node nextBoard = minimax(updatedState, updatePlayer(updatedState, opponent), updatePlayer(updatedState, current), new Node(initialNode, m, score), alphaNode, betaNode, depth - 1);
             alphaNode = Node.Max(alphaNode, nextBoard);
             if (alphaNode.score >= betaNode.score) {
